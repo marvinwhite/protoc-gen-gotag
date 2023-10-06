@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	pgs "github.com/lyft/protoc-gen-star/v2"
+	"github.com/marvinwhite/protoc-gen-gotag/module"
 	"github.com/spf13/afero"
-	"github.com/srikrsna/protoc-gen-gotag/module"
 )
 
 func TestExtract(t *testing.T) {
