@@ -46,7 +46,7 @@ In the above example tags like graphql and xml will be added whereas existing ta
 ## Auto add tags on field
 
 Automatically add custom tags to message field using provided transformer.
-It will compile the tag as ```tag:"snaked_key_name"``` by default if no transformer is being provide.
+It will compile the tag as ```tag:"snaked_key_name"``` by default if no transformer is being provided.
 To provide transformer, use: ```tagName-as-transformer``` instruction when running `gotag`
 
 ```bash
@@ -56,6 +56,16 @@ To provide transformer, use: ```tagName-as-transformer``` instruction when runni
 ```
 
 The above command will add two addtional tags (form and db) for each field. The form tag will be lower_snake_case and db tag will be lowerCamelCase
+
+### Auto add tags and options on field
+
+Automatically adds custom options to message fields, multiple options can be provided if they are separated with `:` character.
+
+```bash
+    protoc -I /usr/local/include \
+    	-I . \
+    	--gotag_out=auto="form+db-as-camel:omitempty":. example/example.proto
+```
 
 Supported transformers:
 
