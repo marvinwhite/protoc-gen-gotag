@@ -1,4 +1,4 @@
-module github.com/srikrsna/protoc-gen-gotag
+module github.com/marvinwhite/protoc-gen-gotag
 
 go 1.16
 

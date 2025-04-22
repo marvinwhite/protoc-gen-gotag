@@ -7,7 +7,7 @@ import (
 	pgs "github.com/lyft/protoc-gen-star/v2"
 	pgsgo "github.com/lyft/protoc-gen-star/v2/lang/go"
 
-	"github.com/srikrsna/protoc-gen-gotag/tagger"
+	"github.com/marvinwhite/protoc-gen-gotag/tagger"
 )
 
 type tagExtractor struct {
@@ -15,12 +15,14 @@ type tagExtractor struct {
 	pgs.DebuggerCommon
 	pgsgo.Context
 
-	tags        map[string]map[string]*structtag.Tags
-	autoAddTags map[string]func(name pgs.Name) pgs.Name
+	tags           map[string]map[string]*structtag.Tags
+	autoAddTags    map[string]func(name pgs.Name) pgs.Name
+	autoAddOptions map[string][]string
 }
 
 func newTagExtractor(d pgs.DebuggerCommon, ctx pgsgo.Context, autoTags []string) *tagExtractor {
-	v := &tagExtractor{DebuggerCommon: d, Context: ctx, autoAddTags: map[string]func(name pgs.Name) pgs.Name{}}
+	v := &tagExtractor{DebuggerCommon: d, Context: ctx, autoAddTags: map[string]func(name pgs.Name) pgs.Name{},
+		autoAddOptions: map[string][]string{}}
 	v.Visitor = pgs.PassThroughVisitor(v)
 	for _, autoTag := range autoTags {
 		info := strings.Split(autoTag, "-as-")
@@ -28,7 +30,13 @@ func newTagExtractor(d pgs.DebuggerCommon, ctx pgsgo.Context, autoTags []string)
 		if len(info) == 1 {
 			v.autoAddTags[tagName] = pgs.Name.LowerSnakeCase
 		} else {
-			switch strings.ToLower(info[1]) {
+			info = strings.Split(info[1], ":")
+			var options []string
+			if len(info) > 1 {
+				options = info[1:]
+			}
+			v.autoAddOptions[tagName] = options
+			switch strings.ToLower(info[0]) {
 			case "lower_snake", "lower_snake_case", "snake", "snake_case":
 				v.autoAddTags[tagName] = pgs.Name.LowerSnakeCase
 			case "upper_snake", "upper_snake_case":
@@ -97,7 +105,7 @@ func (v *tagExtractor) VisitField(f pgs.Field) (pgs.Visitor, error) {
 			t := structtag.Tag{
 				Key:     tag,
 				Name:    transform(v.Context.Name(f)).String(),
-				Options: nil,
+				Options: v.autoAddOptions[tag],
 			}
 			if err := tags.Set(&t); err != nil {
 				v.DebuggerCommon.Fail("Error without tag", err)
